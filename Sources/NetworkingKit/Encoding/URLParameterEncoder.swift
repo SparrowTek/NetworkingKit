@@ -1,16 +1,15 @@
 //
 //  URLParameterEncoder.swift
+//  NetworkingKit
 //
-//
-//  Created by Thomas Rademaker on 12/20/20.
-//  Copyright © 2020 SparrowTek. All rights reserved.
+//  Created by Thomas Rademaker on 1/21/26.
 //
 
 import Foundation
 
 struct URLParameterEncoder: ParameterEncoder {
     /// Configures how `Array` parameters are encoded.
-    public enum ArrayEncoding {
+    enum ArrayEncoding {
         /// An empty set of square brackets is appended to the key for every value. This is the default behavior.
         case brackets
         /// No brackets are appended. The key is encoded as is.
@@ -31,7 +30,7 @@ struct URLParameterEncoder: ParameterEncoder {
     }
 
     /// Configures how `Bool` parameters are encoded.
-    public enum BoolEncoding {
+    enum BoolEncoding {
         /// Encode `true` as `1` and `false` as `0`. This is the default behavior.
         case numeric
         /// Encode `true` and `false` as string literals.
@@ -46,47 +45,47 @@ struct URLParameterEncoder: ParameterEncoder {
             }
         }
     }
-    
+
     /// The encoding to use for `Array` parameters.
-    public let arrayEncoding: ArrayEncoding
+    let arrayEncoding: ArrayEncoding
 
     /// The encoding to use for `Bool` parameters.
-    public let boolEncoding: BoolEncoding
-    
+    let boolEncoding: BoolEncoding
+
     /// The character set tp use for escaping
-    public let characterSet: CharacterSet
-    
-    init(arrayEncoding: ArrayEncoding = .brackets, boolEncoding: BoolEncoding = .numeric, characterSet: CharacterSet = .stURLQueryAllowed) {
+    let characterSet: CharacterSet
+
+    init(arrayEncoding: ArrayEncoding = .brackets, boolEncoding: BoolEncoding = .numeric, characterSet: CharacterSet = .urlQueryAllowed) {
         self.arrayEncoding = arrayEncoding
         self.boolEncoding = boolEncoding
         self.characterSet = characterSet
     }
-    
+
     func encode(urlRequest: inout URLRequest, with parameters: Parameters) throws {
-        
+
         guard let url = urlRequest.url else { throw NetworkError.missingURL }
-        
+
         if var urlComponents = URLComponents(url: url, resolvingAgainstBaseURL: false), !parameters.isEmpty {
             let percentEncodedQuery = (urlComponents.percentEncodedQuery.map { $0 + "&" } ?? "") + query(parameters)
             urlComponents.percentEncodedQuery = percentEncodedQuery
             urlRequest.url = urlComponents.url
         }
-        
+
         if urlRequest.value(forHTTPHeaderField: "Content-Type") == nil {
             urlRequest.setValue("application/x-www-form-urlencoded; charset=utf-8", forHTTPHeaderField: "Content-Type")
         }
     }
-    
+
     private func query(_ parameters: [String: Any]) -> String {
         var components: [(String, String)] = []
-        
+
         for key in parameters.keys.sorted(by: <) {
             let value = parameters[key]!
             components += queryComponents(fromKey: key, value: value)
         }
         return components.map { "\($0)=\($1)" }.joined(separator: "&")
     }
-    
+
     /// Creates a percent-escaped, URL encoded query string components from the given key-value pair recursively.
     ///
     /// - Parameters:
@@ -94,7 +93,7 @@ struct URLParameterEncoder: ParameterEncoder {
     ///   - value: Value of the query component.
     ///
     /// - Returns: The percent-escaped, URL encoded query string components.
-    public func queryComponents(fromKey key: String, value: Any) -> [(String, String)] {
+    func queryComponents(fromKey key: String, value: Any) -> [(String, String)] {
         var components: [(String, String)] = []
         switch value {
         case let dictionary as [String: Any]:
@@ -118,13 +117,13 @@ struct URLParameterEncoder: ParameterEncoder {
         }
         return components
     }
-    
+
     /// Creates a percent-escaped string following RFC 3986 for a query string key or value.
     ///
     /// - Parameter string: `String` to be percent-escaped.
     ///
     /// - Returns:          The percent-escaped `String`.
-    public func escape(_ string: String) -> String {
+    func escape(_ string: String) -> String {
         string.addingPercentEncoding(withAllowedCharacters: characterSet) ?? string
     }
 }

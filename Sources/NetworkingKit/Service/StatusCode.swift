@@ -1,19 +1,19 @@
 //
 //  StatusCode.swift
-//  File
+//  NetworkingKit
 //
-//  Created by Thomas Rademaker on 7/25/21.
+//  Created by Thomas Rademaker on 1/21/26.
 //
 
 import Foundation
 
-public enum StatusCode: Int {
+public enum StatusCode: Int, Sendable {
     // 1xx
     case continueCode = 100
     case switchingProtocols = 101
     case processing = 102
     case earlyHints = 103
-    
+
     // 2xx
     case ok = 200
     case created = 201
@@ -25,7 +25,7 @@ public enum StatusCode: Int {
     case mutliStatus = 207
     case alreadyReported = 208
     case IMUsed = 226
-    
+
     // 3xx
     case multipleChoices = 300
     case movedPermanently = 301
@@ -67,7 +67,7 @@ public enum StatusCode: Int {
     case tooManyRequests = 429
     case requestHeaderFieldsTooLarge = 431
     case unavailableForLegalResons = 451
-    
+
     // 5xx
     case internalServerError = 500
     case notImplemented = 501

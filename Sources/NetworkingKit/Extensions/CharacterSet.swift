@@ -1,8 +1,8 @@
 //
 //  CharacterSet.swift
-//  
+//  NetworkingKit
 //
-//  Created by Thomas Rademaker on 2/8/22.
+//  Created by Thomas Rademaker on 1/21/26.
 //
 
 import Foundation
@@ -18,11 +18,11 @@ extension CharacterSet {
     /// In RFC 3986 - Section 3.4, it states that the "?" and "/" characters should not be escaped to allow
     /// query strings to include a URL. Therefore, all "reserved" characters with the exception of "?" and "/"
     /// should be percent-escaped in the query string.
-    public static let stURLQueryAllowed: CharacterSet = {
+    static let urlQueryAllowed: CharacterSet = {
         let generalDelimitersToEncode = ":#[]@" // does not include "?" or "/" due to RFC 3986 - Section 3.4
         let subDelimitersToEncode = "!$&'()*+,;="
         let encodableDelimiters = CharacterSet(charactersIn: "\(generalDelimitersToEncode)\(subDelimitersToEncode)")
-        
+
         return CharacterSet.urlQueryAllowed.subtracting(encodableDelimiters)
     }()
 }

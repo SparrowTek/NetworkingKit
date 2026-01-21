@@ -1,8 +1,8 @@
 //
 //  Encodable.swift
-//  
+//  NetworkingKit
 //
-//  Created by Thomas Rademaker on 2/11/22.
+//  Created by Thomas Rademaker on 1/21/26.
 //
 
 import Foundation

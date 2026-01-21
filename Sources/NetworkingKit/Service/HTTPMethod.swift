@@ -1,12 +1,11 @@
 //
 //  HTTPMethod.swift
+//  NetworkingKit
 //
-//
-//  Created by Thomas Rademaker on 12/20/20.
-//  Copyright © 2020 SparrowTek. All rights reserved.
+//  Created by Thomas Rademaker on 1/21/26.
 //
 
-public enum HTTPMethod : String {
+public enum HTTPMethod: String {
     case get = "GET"
     case post = "POST"
     case put = "PUT"
