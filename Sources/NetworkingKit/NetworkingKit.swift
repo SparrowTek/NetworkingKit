@@ -13,7 +13,7 @@ public protocol NetworkingKitDecodable: Decodable, Sendable {}
 
 @NetworkingKitActor
 public protocol NetworkRouterDelegate: AnyObject {
-    func intercept(_ request: inout URLRequest)
+    func intercept(_ request: inout URLRequest) async
     func shouldRetry(error: Error, attempts: Int) async throws -> Bool
 }
 

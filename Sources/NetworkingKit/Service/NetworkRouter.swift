@@ -33,7 +33,7 @@ public class NetworkRouter<Endpoint: EndpointType>: NetworkRouterProtocol {
 
     public func execute<T: Decodable & Sendable>(_ route: Endpoint, attempts: Int = 1, shouldThrowUnauthorized: Bool = true) async throws -> T {
         guard var request = try? await buildRequest(from: route) else { throw NetworkError.encodingFailed }
-        delegate?.intercept(&request)
+        await delegate?.intercept(&request)
         return try await performRequest(request, attempts: attempts, shouldThrowUnauthorized: shouldThrowUnauthorized)
     }
 
