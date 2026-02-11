@@ -59,7 +59,7 @@ public class NetworkRouter<Endpoint: EndpointType>: NetworkRouterProtocol {
     }
 
     func buildRequest(from route: Endpoint) async throws -> URLRequest {
-        guard let baseURL = route.baseURL else { throw NetworkError.noBaseUrl }
+        guard let baseURL = await route.baseURL else { throw NetworkError.noBaseUrl }
         return try buildRequest(from: route, using: baseURL)
     }
     

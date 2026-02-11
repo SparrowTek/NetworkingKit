@@ -9,7 +9,7 @@ import Foundation
 
 @NetworkingKitActor
 public protocol EndpointType: Sendable {
-    var baseURL: URL? { get }
+    var baseURL: URL? { get async }
     var path: String { get }
     var httpMethod: HTTPMethod { get }
     var task: HTTPTask { get }
@@ -19,8 +19,10 @@ public protocol EndpointType: Sendable {
 extension EndpointType {
     /// Combines `baseURL` + `path` into a single URL (if valid).
     var fullURL: URL? {
-        guard let base = baseURL else { return nil }
-        return base.appendingPathComponent(path)
+        get async {
+            guard let base = await baseURL else { return nil }
+            return base.appendingPathComponent(path)
+        }
     }
 }
 
