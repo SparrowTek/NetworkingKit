@@ -55,7 +55,7 @@ struct URLParameterEncoder: ParameterEncoder {
     /// The character set tp use for escaping
     let characterSet: CharacterSet
 
-    init(arrayEncoding: ArrayEncoding = .brackets, boolEncoding: BoolEncoding = .numeric, characterSet: CharacterSet = .urlQueryAllowed) {
+    init(arrayEncoding: ArrayEncoding = .brackets, boolEncoding: BoolEncoding = .numeric, characterSet: CharacterSet = .urlQueryAllowedRFC3986) {
         self.arrayEncoding = arrayEncoding
         self.boolEncoding = boolEncoding
         self.characterSet = characterSet
