@@ -25,7 +25,7 @@ public protocol NetworkRouterDelegate: AnyObject {
 protocol NetworkRouterProtocol: AnyObject {
     associatedtype Endpoint: EndpointType
     var delegate: NetworkRouterDelegate? { get set }
-    func execute<T: Decodable>(_ route: Endpoint, attempts: Int, shouldThrowUnauthorized: Bool) async throws -> T
+    func execute<T: Decodable>(_ route: Endpoint, attempts: Int) async throws -> T
 }
 
 public enum NetworkError: Error, Sendable {

@@ -31,13 +31,13 @@ public class NetworkRouter<Endpoint: EndpointType>: NetworkRouterProtocol {
         }
     }
 
-    public func execute<T: Decodable & Sendable>(_ route: Endpoint, attempts: Int = 1, shouldThrowUnauthorized: Bool = true) async throws -> T {
+    public func execute<T: Decodable & Sendable>(_ route: Endpoint, attempts: Int = 1) async throws -> T {
         guard var request = try? await buildRequest(from: route) else { throw NetworkError.encodingFailed }
         await delegate?.intercept(&request)
-        return try await performRequest(request, attempts: attempts, shouldThrowUnauthorized: shouldThrowUnauthorized)
+        return try await performRequest(request, attempts: attempts)
     }
 
-    private func performRequest<T: Decodable & Sendable>(_ request: URLRequest, attempts: Int, shouldThrowUnauthorized: Bool) async throws -> T {
+    private func performRequest<T: Decodable & Sendable>(_ request: URLRequest, attempts: Int) async throws -> T {
         let (data, response) = try await networking.data(for: request, delegate: urlSessionTaskDelegate)
 //        prettyPrintJSON(from: data)
 
@@ -46,15 +46,13 @@ public class NetworkRouter<Endpoint: EndpointType>: NetworkRouterProtocol {
         switch httpResponse.statusCode {
         case 200...299:
             return try decoder.decode(T.self, from: data)
-        case 401:
-            throw NetworkError.statusCode(.unauthorized, data: data, request: request)
         default:
             let statusCode = StatusCode(rawValue: httpResponse.statusCode)
             let error = NetworkError.statusCode(statusCode, data: data, request: request)
 
             guard let delegate else { throw error }
             guard try await delegate.shouldRetry(error: error, attempts: attempts) else { throw error }
-            return try await performRequest(request, attempts: attempts + 1, shouldThrowUnauthorized: shouldThrowUnauthorized)
+            return try await performRequest(request, attempts: attempts + 1)
         }
     }
 
