@@ -9,8 +9,3 @@ public enum HTTPTask: Sendable {
     case request
     case requestParameters(encoding: ParameterEncoding)
 }
-
-public enum SynchronousHTTPTask {
-    case request
-    case requestParameters(encoding: SynchronousParameterEncoding)
-}

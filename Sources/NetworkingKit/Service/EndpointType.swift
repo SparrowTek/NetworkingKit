@@ -25,19 +25,3 @@ extension EndpointType {
         }
     }
 }
-
-public protocol SynchronousEndpointType: Sendable {
-    var baseURL: URL? { get }
-    var path: String { get }
-    var httpMethod: HTTPMethod { get }
-    var task: SynchronousHTTPTask { get }
-    var headers: HTTPHeaders? { get }
-}
-
-extension SynchronousEndpointType {
-    /// Combines `baseURL` + `path` into a single URL (if valid).
-    var fullURL: URL? {
-        guard let base = baseURL else { return nil }
-        return base.appendingPathComponent(path)
-    }
-}
