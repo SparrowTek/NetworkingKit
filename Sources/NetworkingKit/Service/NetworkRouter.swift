@@ -51,8 +51,11 @@ public class NetworkRouter<Endpoint: EndpointType>: NetworkRouterProtocol {
             let error = NetworkError.statusCode(statusCode, data: data, request: request)
 
             guard let delegate else { throw error }
+            await delegate.didReceiveErrorResponse(httpResponse)
             guard try await delegate.shouldRetry(error: error, attempts: attempts) else { throw error }
-            return try await performRequest(request, attempts: attempts + 1)
+            var retryRequest = request
+            await delegate.intercept(&retryRequest)
+            return try await performRequest(retryRequest, attempts: attempts + 1)
         }
     }
 

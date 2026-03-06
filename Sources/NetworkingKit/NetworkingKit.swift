@@ -15,6 +15,11 @@ public protocol NetworkingKitDecodable: Decodable, Sendable {}
 public protocol NetworkRouterDelegate: AnyObject {
     func intercept(_ request: inout URLRequest) async
     func shouldRetry(error: Error, attempts: Int) async throws -> Bool
+    func didReceiveErrorResponse(_ response: HTTPURLResponse) async
+}
+
+extension NetworkRouterDelegate {
+    public func didReceiveErrorResponse(_ response: HTTPURLResponse) async {}
 }
 
 /// Describes the implementation details of a NetworkRouter
