@@ -22,6 +22,9 @@ let package = Package(
         .target(
             name: "NetworkingKit"
         ),
-
+        .testTarget(
+            name: "NetworkingKitTests",
+            dependencies: ["NetworkingKit"]
+        ),
     ]
 )
