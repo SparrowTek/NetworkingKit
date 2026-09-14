@@ -2,6 +2,9 @@
 // https://docs.swift.org/swift-book
 
 import Foundation
+#if canImport(FoundationNetworking)
+import FoundationNetworking
+#endif
 
 @globalActor public actor NetworkingKitActor {
     public static let shared = NetworkingKitActor()

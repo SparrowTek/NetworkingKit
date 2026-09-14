@@ -6,6 +6,9 @@
 //
 
 @preconcurrency import Foundation
+#if canImport(FoundationNetworking)
+@preconcurrency import FoundationNetworking
+#endif
 
 @NetworkingKitActor
 public protocol Networking {
