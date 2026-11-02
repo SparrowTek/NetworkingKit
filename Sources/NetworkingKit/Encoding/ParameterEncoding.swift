@@ -20,6 +20,12 @@ public protocol ParameterEncoder {
 public enum ParameterEncoding: Sendable {
 
     case urlEncoding(parameters: Parameters)
+    /// Appends the items to the query string in the order given, percent-escaping
+    /// names and values per RFC 3986. A name may repeat, which is how XRPC and most
+    /// Go and Rust servers expect an array (`repos=a&repos=b`); a `nil` value
+    /// writes the bare name. Nothing is reordered or rewritten, so a Boolean goes
+    /// out exactly as the caller spelled it.
+    case urlQueryItemsEncoding(queryItems: [URLQueryItem])
     case jsonEncoding(parameters: Parameters)
     case jsonDataEncoding(data: Data)
     case jsonEncodableEncoding(encodable: NetworkingKitEncodable)
@@ -30,6 +36,8 @@ public enum ParameterEncoding: Sendable {
             switch self {
             case .urlEncoding(let parameters):
                 try URLParameterEncoder().encode(urlRequest: &urlRequest, with: parameters)
+            case .urlQueryItemsEncoding(let queryItems):
+                try URLParameterEncoder().encode(urlRequest: &urlRequest, with: queryItems)
             case .jsonEncoding(let parameters):
                 try JSONParameterEncoder().encode(urlRequest: &urlRequest, with: parameters)
             case .jsonDataEncoding(let data):

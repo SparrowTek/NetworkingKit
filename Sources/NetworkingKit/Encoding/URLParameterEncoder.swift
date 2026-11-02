@@ -75,6 +75,18 @@ struct URLParameterEncoder: ParameterEncoder {
         }
     }
 
+    /// Appends ordered query items, keeping repeated names and the caller's order.
+    func encode(urlRequest: inout URLRequest, with queryItems: [URLQueryItem]) throws {
+        guard let url = urlRequest.url else { throw NetworkError.missingURL }
+        guard !queryItems.isEmpty, var urlComponents = URLComponents(url: url, resolvingAgainstBaseURL: false) else { return }
+
+        let query = queryItems
+            .map { item in item.value.map { "\(escape(item.name))=\(escape($0))" } ?? escape(item.name) }
+            .joined(separator: "&")
+        urlComponents.percentEncodedQuery = (urlComponents.percentEncodedQuery.map { $0 + "&" } ?? "") + query
+        urlRequest.url = urlComponents.url
+    }
+
     private func query(_ parameters: [String: Any]) -> String {
         var components: [(String, String)] = []
 

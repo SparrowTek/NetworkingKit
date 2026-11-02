@@ -112,6 +112,65 @@ struct NetworkRouterTests {
         #expect(response.statusCode == 200)
     }
 
+    @Test("executeData returns a success body untouched, even when it isn't JSON")
+    func executeDataReturnsRawBody() async throws {
+        let bytes = Data([0x89, 0x50, 0x4E, 0x47, 0x00])
+        let stub = try NetworkingStub.replying(status: 200, body: bytes)
+        let router = NetworkRouter<TestAPI>(networking: stub)
+
+        let (data, response) = try await router.executeData(.plain)
+
+        #expect(data == bytes)
+        #expect(response.statusCode == 200)
+    }
+
+    @Test("executeData accepts an empty success body")
+    func executeDataAcceptsEmptyBody() async throws {
+        let stub = try NetworkingStub.replying(status: 200)
+        let router = NetworkRouter<TestAPI>(networking: stub)
+
+        let (data, _) = try await router.executeData(.plain)
+
+        #expect(data.isEmpty)
+    }
+
+    @Test("executeData retries through the delegate like execute does")
+    func executeDataRetriesThroughDelegate() async throws {
+        let stub = NetworkingStub(replies: [
+            .success(Data("busy".utf8), try httpResponse(status: 503)),
+            .success(Data("patch".utf8), try httpResponse(status: 200)),
+        ])
+        let router = NetworkRouter<TestAPI>(networking: stub)
+        let delegate = SpyDelegate()
+        delegate.maxAttempts = 2
+        router.delegate = delegate
+
+        let (data, _) = try await router.executeData(.plain)
+
+        #expect(String(decoding: data, as: UTF8.self) == "patch")
+        #expect(stub.requests.count == 2)
+        #expect(delegate.retryAttempts == [1])
+        #expect(delegate.interceptCount == 2)
+    }
+
+    @Test("executeData throws statusCode for an error response")
+    func executeDataThrowsForErrorStatus() async throws {
+        let stub = try NetworkingStub.replying(status: 404, body: Data(#"{"error":"RefNotFound"}"#.utf8))
+        let router = NetworkRouter<TestAPI>(networking: stub)
+
+        do {
+            _ = try await router.executeData(.plain)
+            Issue.record("Expected NetworkError.statusCode")
+        } catch let error as NetworkError {
+            guard case .statusCode(let code, let data, _) = error else {
+                Issue.record("Unexpected error: \(error)")
+                return
+            }
+            #expect(code == .notFound)
+            #expect(String(decoding: data, as: UTF8.self) == #"{"error":"RefNotFound"}"#)
+        }
+    }
+
     @Test("An undecodable success body throws a DecodingError")
     func undecodableBodyThrowsDecodingError() async throws {
         let stub = try NetworkingStub.replying(status: 200, body: Data("not json".utf8))

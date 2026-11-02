@@ -117,4 +117,50 @@ struct URLParameterEncoderTests {
             Issue.record("Expected NetworkError.missingURL")
         } catch NetworkError.missingURL {}
     }
+
+    // MARK: Query items
+
+    @Test("Query items keep their order and repeat names for arrays")
+    func queryItemsKeepOrderAndRepeatNames() throws {
+        var request = URLRequest(url: try requestURL())
+        let items = [
+            URLQueryItem(name: "repos", value: "did:plc:b"),
+            URLQueryItem(name: "repos", value: "did:plc:a"),
+            URLQueryItem(name: "includeStats", value: "true"),
+        ]
+        try URLParameterEncoder().encode(urlRequest: &request, with: items)
+
+        #expect(encodedQuery(of: request) == "repos=did%3Aplc%3Ab&repos=did%3Aplc%3Aa&includeStats=true")
+    }
+
+    @Test("Query items escape reserved characters and allow a bare name")
+    func queryItemsEscapeAndAllowBareNames() throws {
+        var request = URLRequest(url: try requestURL(query: "tip=latest"))
+        try URLParameterEncoder().encode(urlRequest: &request, with: [
+            URLQueryItem(name: "q", value: "a b&c=d+e"),
+            URLQueryItem(name: "flag", value: nil),
+        ])
+
+        #expect(encodedQuery(of: request) == "tip=latest&q=a%20b%26c%3Dd%2Be&flag")
+    }
+
+    @Test("No query items leave the URL untouched")
+    func emptyQueryItemsLeaveURLUntouched() throws {
+        let url = try requestURL()
+        var request = URLRequest(url: url)
+        try URLParameterEncoder().encode(urlRequest: &request, with: [URLQueryItem]())
+
+        #expect(request.url == url)
+    }
+
+    @Test("Query items on a request without a URL throw missingURL")
+    func queryItemsWithoutURLThrow() throws {
+        var request = URLRequest(url: try requestURL())
+        request.url = nil
+
+        do {
+            try URLParameterEncoder().encode(urlRequest: &request, with: [URLQueryItem(name: "a", value: "1")])
+            Issue.record("Expected NetworkError.missingURL")
+        } catch NetworkError.missingURL {}
+    }
 }

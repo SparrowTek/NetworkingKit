@@ -20,6 +20,17 @@ struct ParameterEncodingTests {
         #expect(request.value(forHTTPHeaderField: "Content-Type") == nil)
     }
 
+    @Test("Query item encoding fills the query and nothing else")
+    func urlQueryItemsEncoding() throws {
+        var request = URLRequest(url: try requestURL())
+        let items = [URLQueryItem(name: "ids", value: "a"), URLQueryItem(name: "ids", value: "b")]
+        try ParameterEncoding.urlQueryItemsEncoding(queryItems: items).encode(urlRequest: &request)
+
+        #expect(encodedQuery(of: request) == "ids=a&ids=b")
+        #expect(request.httpBody == nil)
+        #expect(request.value(forHTTPHeaderField: "Content-Type") == nil)
+    }
+
     @Test("JSON encoding writes a labeled body")
     func jsonEncoding() throws {
         var request = URLRequest(url: try requestURL())

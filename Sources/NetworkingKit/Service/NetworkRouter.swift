@@ -47,7 +47,23 @@ public class NetworkRouter<Endpoint: EndpointType>: NetworkRouterProtocol {
         return try await performRequest(request, attempts: attempts)
     }
 
+    /// Performs the request and returns the body of a 2xx response untouched.
+    ///
+    /// For endpoints that answer with something other than JSON (file bytes, a
+    /// patch, an archive) or with an empty body. Errors, delegate interception
+    /// and retries behave exactly as they do for ``execute(_:attempts:)``.
+    public func executeData(_ route: Endpoint, attempts: Int = 1) async throws -> (Data, HTTPURLResponse) {
+        guard var request = try? await buildRequest(from: route) else { throw NetworkError.encodingFailed }
+        await delegate?.intercept(&request)
+        return try await performDataRequest(request, attempts: attempts)
+    }
+
     private func performRequest<T: Decodable & Sendable>(_ request: URLRequest, attempts: Int) async throws -> (T, HTTPURLResponse) {
+        let (data, httpResponse) = try await performDataRequest(request, attempts: attempts)
+        return (try decoder.decode(T.self, from: data), httpResponse)
+    }
+
+    private func performDataRequest(_ request: URLRequest, attempts: Int) async throws -> (Data, HTTPURLResponse) {
         let (data, response) = try await networking.data(for: request, delegate: urlSessionTaskDelegate)
 //        prettyPrintJSON(from: data)
 
@@ -55,8 +71,7 @@ public class NetworkRouter<Endpoint: EndpointType>: NetworkRouterProtocol {
 
         switch httpResponse.statusCode {
         case 200...299:
-            let decoded = try decoder.decode(T.self, from: data)
-            return (decoded, httpResponse)
+            return (data, httpResponse)
         default:
             let statusCode = StatusCode(rawValue: httpResponse.statusCode)
             let error = NetworkError.statusCode(statusCode, data: data, request: request)
@@ -66,7 +81,7 @@ public class NetworkRouter<Endpoint: EndpointType>: NetworkRouterProtocol {
             guard try await delegate.shouldRetry(error: error, attempts: attempts) else { throw error }
             var retryRequest = request
             await delegate.intercept(&retryRequest)
-            return try await performRequest(retryRequest, attempts: attempts + 1)
+            return try await performDataRequest(retryRequest, attempts: attempts + 1)
         }
     }
 
